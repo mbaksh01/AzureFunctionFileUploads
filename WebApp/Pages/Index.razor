@@ -1,0 +1,39 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Forms;
+
+<h1>Hello, world!</h1>
+
+<InputFile OnChange="OnChange">
+
+</InputFile>
+
+<button @onclick="Send">Send</button>
+
+@code {
+    IBrowserFile file;
+
+    private void OnChange(InputFileChangeEventArgs args)
+    {
+        file = args.File;
+    }
+
+    private async Task Send()
+    {
+        // Allow 5MB max upload.
+        Stream s = file.OpenReadStream(5120000);
+
+        long i = s.Length;
+
+        HttpClient httpClient = new HttpClient()
+        {
+            BaseAddress = new Uri("http://localhost:5151")
+        };
+
+        var data = new MultipartFormDataContent()
+        {
+            { new StreamContent(s), "file", file.Name }
+        };
+
+        await httpClient.PostAsync("/file", data);
+    }
+}
